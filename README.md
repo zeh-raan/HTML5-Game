@@ -1,47 +1,30 @@
-# Task Assignation
-Background
-- Vashish + Gregory -> Parallax background (cartoon, upper jungle, sky)
+# Story
+A mauritius parakeet chasing after a poacher in a hot air ballon to rescue her baby nest.
 
-Game Logic
-- Boods -> js skeleton gameloop
+## Collaborators
+| ID          | Name              |
+|-------------|-------------------|
+| `ID`    | Name             |
+| `ID` | Name              |
+| `ID`    | Name             |
+| `ID` | Name              |
+| `2412529`   | Azimekhan Zehraan |
 
-Individual sprites sheet:
-- Ayush -> Top palm trees
-- Azim -> parakeet, nest and eggs
+## Fork then clone your own repository
 
-Game Music
-- Gregory -> Reggae, cartoonish style
+```bash
+git clone https://github.com/<your-username>/HTML5-Game.git
+```
 
-# Game Story
-- Father parakeet went to search for threads to reinforce the nest while Mother Parakeet was keeping the eggs
-- A poacher (Big boss) steal the whole nest (with the mother and the eggs) and escape on an air balloon
-- Father parakeet tries to get his family back by flying in the upper jungle of Black River
-- The poacher will throw nets which Father Parakeet will need to dodge
-- In the jungle there will be fruits with different abilities and enemies to dodge or eliminate to score points.
+## Implement Sprite in JS
 
-# Characters
-Father Parakeet
-- General Parakeet design
-- Reggae hat with dreadlocks
+```javascript
+drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
+```
 
-Mother Parakeet
-- General Parakeet design
-
-Poacher
-- Evil poachar with the Mauritian style
-
-# Consumables (Parakeet's buff)
-- Fruits:
-    - Guava
-    - Ebony Fruits
-    - Palm Fruits
-
-# Enemies
-- Poacher
-- Mauritian Kestrel
-- Rats
-
-# Weapons
-- Bazooka (final boss)
-- Savatte dodo
-- Macadam (primary weapons)
+| Parameters | Explanation                       |
+|------------|-----------------------------------|
+| sx,sy      | start position in sprite sheet    |
+| sw,sh       | size of frame inside sprite sheet |
+| dx,dy       | position on canvas                |
+| dw,dh       | size on canvas                    |

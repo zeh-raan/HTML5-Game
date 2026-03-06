@@ -1,43 +1,75 @@
 class Player {
+
     constructor(ctx) {
+
         this.ctx = ctx;
-
-        this.hp = 1;
-
-        // These are test values!!!
-        this.x = 50; // Will we even use it?
-        this.y = 50;
-
-        this.width = 100;
-        this.height = 100;
-
-        // Physics stuff
-        this.velY = 0;
-        this.jumped = false; // Or flapped, same thing. It doesn;t matter when it's in 1's and 0's
-        this.jumpForce = -20;
+        // Starting position
+        this.x = 100;
+        this.y = 250;
+        // Size of sprite
+        this.width  = 200;
+        this.height = 200;
+        // Vertical speed
+        this.spdY = 0;
+        // Gravity constantly pulls down (+ve)
+        this.gravity = 0.5;
+        // Flapping force pushes upwards (-ve)
+        this.flapPower = -8;
+        // Animation state
+        this.frameIndex = 0;
+        this.frameTimer  = 0;
+        // Spritesheet frame size
+        this.spriteWidth = 768;
+        this.spriteHeight = 768;
+        // Load spritesheet image
+        this.sprite = new Image();
+        this.sprite.src = "./assets/parakeet.png";
     }
 
-    // Draw the player and shit
-    draw() {
-        this.ctx.fillStyle = "black";
-        this.ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-
-    // Update player attributes such as movement
-    // TODO: Account for screen boundaries
+    // Update player
     update(game) {
-        this.velY += game.gravity;
 
-        // Jump logic
-        if (game.keys["w"] && !this.jumped) {
-            this.velY += this.jumpForce;
+        // Apply gravity and vertical speed
+        this.spdY += this.gravity;
+        this.y += this.spdY;
+
+        // Set boundaries
+        this.y = Math.min(
+            Math.max(this.height / 2, this.y), // Top limit
+            game.height - this.height / 2             // Bottom limit
+        );
+
+        // Flaps when [SPACE] is pressed
+        if (game.keys["Space"]) {
+            //Apply upward force
+            this.spdY = this.flapPower;
         }
 
-        // Run checks
-        this.jumped = game.keys["w"]; // Returns a boolean
-        
-        // Update movement
-        this.y += this.velY;
+        // Handle animation timing
+        this.frameTimer++;
+
+        // Change frame every 10 updates
+        if (this.frameTimer % 10 === 0) {
+            // Toggle between frame 0 and 1
+            this.frameIndex = (this.frameIndex + 1) % 2;
+        }
+    }
+
+    // Draw player
+    draw() {
+        // Horizontal frame
+        const sx = this.frameIndex * this.spriteWidth;
+
+        // Vertical frame
+        const sy = 0;
+
+        this.ctx.drawImage(
+            this.sprite,
+            sx, sy,
+            this.spriteWidth, this.spriteHeight,
+            this.x - this.width / 2, this.y - this.height / 2,
+            this.width, this.height
+        );
     }
 }
 
