@@ -49,8 +49,9 @@ class Player {
         if (this.currentAnimation == "hurt") {
             this.framesSinceHurt++;
 
-            if (this.framesSinceHurt == 24) {
+            if (this.framesSinceHurt == 50) {
                 this.framesSinceHurt = 0;
+                this.animations["hurt"].reset();
                 this.currentAnimation = "fly"; // Loses savatte
             }
         }

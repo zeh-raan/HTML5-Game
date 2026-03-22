@@ -1,5 +1,5 @@
 import Enemy from "./enemy.js";
-import acornArgs from "./items/acorn.js";
+import mangoArgs from "./items/mango.js";
 import bulletArgs from "./items/bullet.js";
 import savatteArgs from "./items/savatte.js";
 import savattePickupArgs from "./items/savattePickup.js";
@@ -19,7 +19,7 @@ class Game extends EventTarget {
         this.player = new Player(this.ctx);
         this.playerHP = 5;
 
-        this.enemy = new Enemy(this.ctx, this.width - 100, this.height / 2, 200, 200, this.player);
+        this.enemy = new Enemy(this.ctx, this.width * 0.85, this.height / 2, 400, 400, this.player);
         this.enemyHP = 5;
 
         // Creates a spawner for weapons
@@ -29,10 +29,10 @@ class Game extends EventTarget {
         this.savatteSpawner = new Spawner(ctx, 120, savattePickupArgs);
 
         // Creating a spawner for health pickups
-        acornArgs.ctx = ctx;
-        acornArgs.target = this.player;
-        acornArgs.spriteLoader = new SpriteLoader(acornArgs.spriteSrc, 1, 1);
-        this.acornSpawner = new Spawner(ctx, 300, acornArgs);
+        mangoArgs.ctx = ctx;
+        mangoArgs.target = this.player;
+        mangoArgs.spriteLoader = new SpriteLoader(mangoArgs.spriteSrc, 1, 1);
+        this.mangoSpawner = new Spawner(ctx, 300, mangoArgs);
         
         // Game logic
         this.frameTimer = -1;
@@ -65,6 +65,7 @@ class Game extends EventTarget {
         // Hitting the poacher
         this.addEventListener(savatteArgs.event, (e) => {
             this.enemyHP--;
+            this.enemy.takeDamage();
 
             console.log("Poacher hit!", e.detail, "\nHP left:", this.enemyHP);
         })
@@ -79,7 +80,7 @@ class Game extends EventTarget {
         });
 
         // Player heals
-        this.addEventListener(acornArgs.event, (e) => {
+        this.addEventListener(mangoArgs.event, (e) => {
 
             // Doesn't pickup if health is full
             const src = e.detail.src;
@@ -100,7 +101,7 @@ class Game extends EventTarget {
 
         // Update systems
         this.savatteSpawner.update(this);
-        this.acornSpawner.update(this);
+        this.mangoSpawner.update(this);
 
         // Update and draw every object in the game
         this.objects.forEach(obj => {

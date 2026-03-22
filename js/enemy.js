@@ -20,21 +20,23 @@ class Enemy {
         this.lastDirection = 0;
 
         this.moveInterval = 120;
-        this.shootInterval = 90;
         
-        this.shootInterval = 90;
+        this.shootInterval = 155;
         this.nextShotDelay = this.shootInterval;
         this.lastShotFrame = 0;
 
         // Animation logic
         this.animations = {
-            idle: new SpriteLoader("./assets/parakeet_fly.png", 5, 5),
-            shoot: new SpriteLoader("./assets/parakeet_attack.png", 5, 5)
+            idle: new SpriteLoader("./assets/poacher_idle.png", 5, 5),
+            shoot: new SpriteLoader("./assets/poacher_shoot.png", 5, 5),
+            hurt: new SpriteLoader("./assets/poacher_damage.png", 5, 5),
         };
 
         this.currentAnimation = "idle"; 
-        this.frameRate = 5;
+        this.frameRate = 6;
         this.frameCounter = 0;
+        this.frameSinceLastShot = 0;
+        this.frameSinceHurt = 0;
     }
 
     update(game) {
@@ -43,6 +45,26 @@ class Enemy {
         // 2. Move down
         // 3. Stay still
         
+        if (this.currentAnimation == "shoot") {
+            this.frameSinceLastShot++;
+
+            if (this.frameSinceLastShot == 10) {
+                this.animations["shoot"].reset();
+                this.frameSinceLastShot = 0;
+                this.currentAnimation = "idle";
+            }
+        }
+
+        if (this.currentAnimation == "hurt") {
+            this.frameSinceHurt++;
+
+            if (this.frameSinceHurt == 50) {
+                this.frameSinceHurt = 0;
+                this.animations["hurt"].reset();
+                this.currentAnimation = "idle"; // Loses savatte
+            }
+        }
+
         // Chooses every 10 frames
         if (game.frameTimer % this.moveInterval == 0) {
             const decision = Math.floor(Math.random() * 3);
@@ -72,12 +94,14 @@ class Enemy {
         // Set the enemy's range of motion here
         this.y += this.speedY * this.direction;
         this.y = Math.min(
-            Math.max(game.height * 0.2, this.y), 
-            (game.height * 0.8 ) - this.height / 2
+            Math.max(game.height * 0.3, this.y), 
+            (game.height * 0.9) - this.height / 2
         );
 
         // Pew pew
-        if (game.frameTimer - this.lastShotFrame >= this.nextShotDelay) {
+        if ((game.frameTimer - this.lastShotFrame >= this.nextShotDelay) && this.currentAnimation != "hurt") {
+            this.currentAnimation = "shoot";
+
             this.shoot(game);
             this.lastShotFrame = game.frameTimer;
 
@@ -113,7 +137,7 @@ class Enemy {
 
         // Filling in missing values
         bulletArgs.ctx = this.ctx;
-        bulletArgs.x = this.x;
+        bulletArgs.x = this.x - 25;
         bulletArgs.y = this.y;
         bulletArgs.target = game.player;
 
@@ -126,6 +150,10 @@ class Enemy {
         // });
 
         game.objects.push(bullet);
+    }
+
+    takeDamage() {
+        this.currentAnimation = "hurt"; 
     }
 }
 

@@ -1,4 +1,4 @@
-const acornArgs = {
+const mangoArgs = {
     // Canvas context will be provided by something else
     // x and y will be randomised
 
@@ -10,7 +10,7 @@ const acornArgs = {
     event: "acornCollected",
     objToPassOnCollide: {}, 
     
-    spriteSrc: "./assets/acorn.png",
+    spriteSrc: "./assets/mango.png",
 };
 
-export default acornArgs;
+export default mangoArgs;
