@@ -1,5 +1,6 @@
-import coinArgs from "./coin.js";
+import coinArgs from "./items/coin.js";
 import Spawner from "./spawner.js";
+import SpriteLoader from "./spriteloader.js";
 
 class Game extends EventTarget {
     constructor(ctx, width, height, player) {
@@ -7,20 +8,23 @@ class Game extends EventTarget {
 
         this.ctx = ctx;
         this.width = width;
-        this.height = height;
-        this.score = 0;
+        this.height = height;        
 
         // Creates a coin spawner
         coinArgs.ctx = ctx;
         coinArgs.target = player;
+        coinArgs.spriteLoader = new SpriteLoader("./assets/savatte_dodo.png", 1, 1);
         this.coinSpawner = new Spawner(ctx, 120, coinArgs);
 
         // NOTE: Attaching EXAMPLE listener
-        this.addEventListener("coinCollected", this.onCoinCollected);
+        this.addEventListener("coinCollected", this.onSavatteCollected);
 
         // Game logic
         this.frameTimer = -1;
         this.objects = [player]; // Player and collectibles
+
+        this.score = 0;
+        this.savatteCollected = false;
 
         // Handle player input
         this.keys = {};
@@ -29,14 +33,22 @@ class Game extends EventTarget {
     }
 
     // Coin collection handler
-    onCoinCollected = (e) => {
-        this.score += e.detail.value;
-        console.log("Coins:", this.score, "\nDetail:", e.detail);
+    onSavatteCollected = (e) => {
+        const s = e.detail.src;
+
+        // Doesn't collect savatte if already has one
+        if (this.savatteCollected) {
+            s.dead = false;
+            return;
+        };
+        
+        this.savatteCollected = true;
+        console.log("Collected Savatte!");
     }
 
     // Runs every animation frame
     nextFrame = () => {
-        this.frameTimer++;
+        this.frameTimer += 1;
         this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
         // Update systems

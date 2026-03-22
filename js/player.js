@@ -1,3 +1,7 @@
+import savatteArgs from "./items/savatte.js";
+import Projectile from "./projectile.js";
+import SpriteLoader from "./spriteloader.js";
+
 class Player {
     constructor(ctx) {
         this.ctx = ctx;
@@ -12,16 +16,10 @@ class Player {
         this.gravity = 0.5;
         this.flapPower = -8;
 
-        // Animation state
-        this.frameIndex = 0;
-
-        // Spritesheet frame size
-        this.spriteWidth = 768;
-        this.spriteHeight = 768;
-
-        // Load spritesheet image
-        this.sprite = new Image();
-        this.sprite.src = "./assets/parakeet.png";
+        // Animation logic
+        this.spriteLoader = new SpriteLoader("./assets/parakeet_fly.png", 5, 5);
+        this.frameRate = 4;
+        this.frameCounter = 0;
     }
 
     // Update player
@@ -40,24 +38,57 @@ class Player {
             this.spdY = this.flapPower;
         }
 
-        // Handle animation timing
-        if (game.frameTimer % 10 === 0) {
-            this.frameIndex = (this.frameIndex + 1) % 2;
+        // Avoy savatte
+        if (game.keys["KeyF"] && game.savatteCollected) {
+            game.keys["KeyF"] = false;
+            game.savatteCollected = false;
+
+            this.shoot(game);
         }
     }
 
     // Draw player
     draw() {
-        const sx = this.frameIndex * this.spriteWidth;
-        const sy = 0;
+        this.frameCounter++;
+        if (this.frameCounter >= this.frameRate) {
+            this.frameCounter = 0;
+            this.currentFrame = this.spriteLoader.next();
+        }
+
+        if (!this.currentFrame) return;
 
         this.ctx.drawImage(
-            this.sprite,
-            sx, sy,
-            this.spriteWidth, this.spriteHeight,
-            this.x - this.width / 2, this.y - this.height / 2,
-            this.width, this.height
+            this.spriteLoader.image,
+            this.currentFrame.sx,
+            this.currentFrame.sy,
+            this.currentFrame.sw,
+            this.currentFrame.sh,
+            this.x - this.width / 2,
+            this.y - this.height / 2,
+            this.width,
+            this.height
         );
+    }
+
+    // Shoots a savatte dodo after obtaining the collectable first
+    shoot(game) {
+
+        // Filling in missing values
+        savatteArgs.ctx = this.ctx;
+        savatteArgs.x = this.x;
+        savatteArgs.y = this.y;
+        savatteArgs.target = game.enemy;
+
+        // Animation for the savatte
+        savatteArgs.spriteLoader = new SpriteLoader(savatteArgs.spriteSrc, 3, 3);
+        const savatte = new Projectile(savatteArgs);
+
+        // Optional: handle hits directly on the game
+        // bullet.addEventListener("hit", e => {
+        //     game.dispatchEvent(new CustomEvent("enemyHit", { detail: e.detail }));
+        // });
+
+        game.objects.push(savatte);
     }
 }
 

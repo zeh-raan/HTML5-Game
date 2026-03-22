@@ -1,16 +1,18 @@
 import Collectable from "./collectable.js";
 
 class Spawner {
-    constructor(ctx, spawnInterval, collectableArgs) {
+    constructor(ctx, baseInterval, collectableArgs) {
         this.ctx = ctx;
-        this.spawnInterval = spawnInterval;
+        this.baseInterval = baseInterval;
         this.collectableArgs = collectableArgs;
     }
 
     update(game) {
-        if (game.frameTimer % this.spawnInterval === 0) {
+        const rndSpawn = this.baseInterval * Math.floor(Math.random() * 2); // Adds some randomness
+
+         if (game.frameTimer % rndSpawn === 0) {
             const x = game.width + 100; // Starts offscreen
-            const y = Math.random() * (game.height - this.collectableArgs.height) + this.collectableArgs.height / 2;
+            const y = Math.random() * ((game.height * 0.8) - this.collectableArgs.height) + this.collectableArgs.height / 2;
             
             this.collectableArgs.x = x;
             this.collectableArgs.y = y;

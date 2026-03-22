@@ -1,4 +1,4 @@
-class Collectable {
+class Projectile {
     constructor(
         {ctx, x, y, width, height, movementVector, target, event, 
         objToPassOnCollide, spriteLoader}
@@ -10,14 +10,12 @@ class Collectable {
         this.width = width;
         this.height = height;
 
-        // Regarding game logic
-        this.dead = false;
+        // Collision/Game logic
         this.movementVector = movementVector;
-
-        // Regarding collision
         this.target = target;
         this.event = event;
         this.objToPassOnCollide = objToPassOnCollide;
+        this.dead = false;
 
         // Animation logic
         this.spriteLoader = spriteLoader
@@ -25,19 +23,15 @@ class Collectable {
         this.frameCounter = 0;
     }
 
-    // Will usually move in a certain direction
     update(game) {
+        this.x += this.movementVector;
+        this.onCollide(game);
 
-        // Hardcoded for things that go from right to left
-        if (this.x < 0 && !this.dead) {
+        if (this.x > game.width || this.x < 0) {
             this.dead = true;
         }
-
-        this.x += this.movementVector; // y usually unchanged
-        this.onCollide(game);
     }
 
-    // Draws the collectible
     draw() {
         this.frameCounter++;
         if (this.frameCounter >= this.frameRate) {
@@ -60,30 +54,20 @@ class Collectable {
         );
     }
 
-    // Fires custom event when colliding with player or another sprite
     onCollide(game) {
-        const e = new CustomEvent(this.event, {
-            detail: {
-                value: this.objToPassOnCollide,
-                src: this,
-            },
-        });
+        if (!this.target || this.dead) return;
 
-        // Collision detection
-        const offsetX = 2;
-        const offsetY = 0.8;
-
-        const collided = 
-            this.target.x + this.target.width > this.x * offsetX &&
-            this.target.x < this.x + this.width &&  
-            (this.target.y + this.target.height) * offsetY > this.y &&
+        const collided =
+            this.target.x + this.target.width > this.x &&
+            this.target.x < this.x + this.width &&
+            this.target.y + this.target.height > this.y &&
             this.target.y < this.y + this.height;
-            
-        if (collided && !this.dead) {
+
+        if (collided) {
             this.dead = true;
-            game.dispatchEvent(e); // NOTE: Event is dispatched by game
+            game.dispatchEvent(new CustomEvent(this.event, { detail: this.objToPassOnCollide }));
         }
     }
 }
 
-export default Collectable;
+export default Projectile;

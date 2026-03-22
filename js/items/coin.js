@@ -8,11 +8,9 @@ const coinArgs = {
     
     // target will be passed by something else
     event: "coinCollected",
-    objToPassOnCollide: { value: 1 }, 
+    objToPassOnCollide: {}, 
     
-    spriteSrc: "./assets/parakeet.png",
-    spriteWidth: 768,
-    spriteHeight: 768
+    spriteSrc: "./assets/savatte_dodo.png",
 };
 
 export default coinArgs;
