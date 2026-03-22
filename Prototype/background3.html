@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallax Background - Prototype</title>
+    <style>
+        body {
+            background: black;
+        }
+
+        #canvas-bg {
+            position: absolute;
+            border: 3px solid white;
+            width: 800px;
+            height: 500px;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translate(-50%);
+            width: 780px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        #score {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px black;
+        }
+
+        #controls {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        button {
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 2px solid white;
+            border-radius: 10px;
+            font-size: 20px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas-bg"></canvas>
+
+    <div id="ui">
+        <div id="hearts">
+            <canvas id="heartCanvas" width="150" height="50"></canvas>
+        </div>
+    </div>
+
+    <!-- SCRIPTING FOR PARALLAX -->
+    <script>
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        const CANVAS_WIDTH = canvas.width = 1800;
+        const CANVAS_HEIGHT = canvas.height = 1000;
+        let gameSpeed = 3;
+
+        // Background 1
+        const background1 = new Image();
+        background1.src = '/Sprites/Cartoon_Forest_BG_01.png';
+
+        // Obstacle image
+        const obstacleImg = new Image();
+        obstacleImg.src = '/Sprites/obstacle-Photoroom.png';
+
+
+        let x = 0;
+        let x2 = 1900;
+
+
+
+        // Add the background music
+        function addBackgroundMusic() {
+            const music = new Audio('/Audio/audio1.mp3'); // path to your music
+            music.loop = true;   // keeps playing
+            music.volume = 0.5;  // optional volume control
+            music.play();
+        }
+
+        // Create the parallax animation
+        function animate() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctx.drawImage(background1, x, 0);
+            ctx.drawImage(background1, x2, 0);
+
+            if (x < -1900) x = 1900 + x2 - gameSpeed;
+            else x -= gameSpeed;
+
+            if (x2 < -1900) x2 = 1900 + x - gameSpeed;
+            else x2 -= gameSpeed;
+
+            requestAnimationFrame(animate);
+
+            updateObstacles();
+            drawObstacles();
+
+            drawUI(ctx);
+
+            drawBorder();
+
+
+        };
+
+        // Calls all the functios
+        document.addEventListener("click", addBackgroundMusic, { once: true });
+        animate();
+    </script>
+
+    <!-- SCRIPTING FOR GAME UI -->
+    <script>
+        let mouse = {
+            x: 0,
+            y: 0
+        };
+
+        let hoveredButton = null;
+
+        // Track mouse position
+        canvas.addEventListener("mousemove", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            mouse.y = (e.clientY - rect.top) * (canvas.height / rect.height);
+        });
+
+        let heartScale = 1;
+        let heartPulseDir = 1;
+
+        // Simulate damage animation trigger (design only)
+        let heartFlash = false;
+        let flashTimer = 0;
+        function drawUI(ctx) {
+
+            /* ===================== ❤️ HEARTS ===================== */
+
+            function drawHeart(x, y, size, scale) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.scale(scale, scale);
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+
+                ctx.bezierCurveTo(0, -size / 2, -size, -size / 2, -size, 0);
+                ctx.bezierCurveTo(-size, size / 2, 0, size, 0, size);
+
+                ctx.bezierCurveTo(0, size, size, size / 2, size, 0);
+                ctx.bezierCurveTo(size, -size / 2, 0, -size / 2, 0, 0);
+
+                // Flash effect (damage)
+                ctx.fillStyle = heartFlash ? "#ff4d4d" : "red";
+
+                ctx.fill();
+                ctx.strokeStyle = "black";
+                ctx.stroke();
+                ctx.closePath();
+
+                ctx.restore();
+            }
+
+            // Animate pulse
+            heartScale += 0.01 * heartPulseDir;
+            if (heartScale > 1.1 || heartScale < 0.95) {
+                heartPulseDir *= -1;
+            }
+
+            // Flash timer
+            if (heartFlash) {
+                flashTimer++;
+                if (flashTimer > 10) {
+                    heartFlash = false;
+                    flashTimer = 0;
+                }
+            }
+
+            // Draw hearts
+            drawHeart(40, 50, 15, heartScale);
+            drawHeart(90, 50, 15, heartScale);
+            drawHeart(140, 50, 15, heartScale);
+
+
+            /* ===================== SCORE ===================== */
+
+            ctx.fillStyle = "white";
+            ctx.font = "30px Arial";
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "black";
+
+            const scoreText = "Score: 0000";
+
+            ctx.strokeText(scoreText, CANVAS_WIDTH / 2 - 80, 50);
+            ctx.fillText(scoreText, CANVAS_WIDTH / 2 - 80, 50);
+
+
+            /* ===================== BUTTONS ===================== */
+
+            function drawButton(x, y, size, type) {
+
+                // Detect hover
+                const isHover =
+                    mouse.x >= x &&
+                    mouse.x <= x + size &&
+                    mouse.y >= y &&
+                    mouse.y <= y + size;
+
+                if (isHover) hoveredButton = type;
+
+                // Hover effect
+                ctx.fillStyle = isHover ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.6)";
+                ctx.fillRect(x, y, size, size);
+
+                ctx.strokeStyle = "white";
+                ctx.strokeRect(x, y, size, size);
+
+                ctx.fillStyle = "white";
+
+                if (type === "pause") {
+                    ctx.fillRect(x + 10, y + 8, 6, 24);
+                    ctx.fillRect(x + 24, y + 8, 6, 24);
+                }
+
+                if (type === "mute") {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 10, y + 15);
+                    ctx.lineTo(x + 20, y + 15);
+                    ctx.lineTo(x + 28, y + 8);
+                    ctx.lineTo(x + 28, y + 32);
+                    ctx.lineTo(x + 20, y + 25);
+                    ctx.lineTo(x + 10, y + 25);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x + 30, y + 20, 6, -0.5, 0.5);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x + 32, y + 20, 10, -0.5, 0.5);
+                    ctx.stroke();
+                }
+            }
+
+            const btnSize = 40;
+
+            drawButton(CANVAS_WIDTH - 120, 20, btnSize, "pause");
+            drawButton(CANVAS_WIDTH - 60, 20, btnSize, "mute");
+        }
+    </script>
+
+    <!-- SCRIPTING FOR OBSTACLES -->
+    <script>
+        // ================= OBSTACLES =================
+        let obstacles = [];
+        let frameCount = 0;
+
+        function spawnObstacle1(baseX, baseY, speed) {
+            const size = 300;
+
+            obstacles.push({
+                x: baseX,
+                y: baseY,
+                width: size,
+                height: size,
+                speed: speed
+            });
+        }
+
+        function spawnObstacle2(baseX, baseY, speed) {
+            const size = 300;
+
+            // Much larger gap (150–300px)
+            const gap = Math.random() * 150 + 150;
+
+            // Stronger diagonal (previously ×1.6 → now ×2.5)
+            const magnitude = (Math.random() * 100 - 50) * 10;
+
+            // Bias: 70% ABOVE
+            const bias = Math.random() < 0.7 ? -1 : 1;
+
+            const yOffset = Math.abs(magnitude) * bias;
+
+            // Clamp inside canvas
+            const secondY = Math.max(0, Math.min(CANVAS_HEIGHT - size, baseY + yOffset));
+
+            obstacles.push({
+                x: baseX + size + gap,
+                y: secondY,
+                width: size,
+                height: size,
+                speed: speed
+            });
+        }
+
+        let lastObstacleTime = 0; // tracks when obstacles were last spawned
+
+        function updateObstacles() {
+            const now = Date.now(); //current time in milliseconds
+
+            // Spawn in 2 obstacles every 3 seconds (3000ms)
+            if (now - lastObstacleTime > 3000) {
+                // for (let i = 0; i < 2; i++) {
+                //     setTimeout(() => {
+                //         spawnObstacle();
+                //     }, i * 200); // Small delay between the 2 obstacles
+                // }
+                const baseX = CANVAS_WIDTH;
+                const baseY = Math.random() * (CANVAS_HEIGHT - 300);
+                const speed = Math.random() * 2 + 2;
+
+                spawnObstacle1(baseX, baseY, speed);
+                spawnObstacle2(baseX, baseY, speed);
+                lastObstacleTime = now;
+
+
+            }
+
+            // Move obstacles
+            obstacles.forEach(ob => {
+                ob.x -= gameSpeed;
+            });
+
+            // Remove off-screen obstacles
+            obstacles = obstacles.filter(ob => ob.x + ob.width > 0);
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(ob => {
+                ctx.drawImage(
+                    obstacleImg,
+                    ob.x,
+                    ob.y,
+                    ob.width,
+                    ob.height
+                );
+            });
+        }
+    </script>
+
+    <!-- SCRIPTING FOR BORDER -->
+     <script>
+        const borderImg = new Image();
+        borderImg.src = "/Sprites/border.png";
+
+        function drawBorder(){
+            const overflow = 20;
+
+            ctx.drawImage(
+                borderImg,
+                -overflow,
+                -overflow,
+                CANVAS_WIDTH + overflow * 2,
+                CANVAS_HEIGHT + overflow * 2
+            );
+        }
+     </script>
+</body>
+
+</html>
