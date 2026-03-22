@@ -1,16 +1,16 @@
-const coinArgs = {
+const acornArgs = {
     // Canvas context will be provided by something else
     // x and y will be randomised
 
     width: 80,
     height: 80,
-    movementVector: -3, // Moves to the length
+    movementVector: -2, // Moves to the length
     
     // target will be passed by something else
-    event: "coinCollected",
+    event: "acornCollected",
     objToPassOnCollide: {}, 
     
-    spriteSrc: "./assets/savatte_dodo.png",
+    spriteSrc: "./assets/acorn.png",
 };
 
-export default coinArgs;
+export default acornArgs;

@@ -57,15 +57,21 @@ class Projectile {
     onCollide(game) {
         if (!this.target || this.dead) return;
 
-        const collided =
-            this.target.x + this.target.width > this.x &&
-            this.target.x < this.x + this.width &&
-            this.target.y + this.target.height > this.y &&
-            this.target.y < this.y + this.height;
+        // Collision detection
+        const collided = 
+            this.target.x - this.target.width/2 < this.x + this.width/2 &&
+            this.target.x + this.target.width/2 > this.x - this.width/2 &&
+            this.target.y - this.target.height/2 < this.y + this.height/2 &&
+            this.target.y + this.target.height/2 > this.y - this.height/2;
 
         if (collided) {
             this.dead = true;
-            game.dispatchEvent(new CustomEvent(this.event, { detail: this.objToPassOnCollide }));
+            game.dispatchEvent(new CustomEvent(this.event, { 
+                detail: {
+                    value: this.objToPassOnCollide,
+                    src: this,
+                }
+            }));
         }
     }
 }

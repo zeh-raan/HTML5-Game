@@ -17,7 +17,13 @@ class Player {
         this.flapPower = -8;
 
         // Animation logic
-        this.spriteLoader = new SpriteLoader("./assets/parakeet_fly.png", 5, 5);
+        this.animations = {
+            fly: new SpriteLoader("./assets/parakeet_fly.png", 5, 5),
+            shoot: new SpriteLoader("./assets/parakeet_attack.png", 5, 5),
+            hurt: new SpriteLoader("./assets/parakeet_damage.png", 5, 5)
+        };
+
+        this.currentAnimation = "fly"; 
         this.frameRate = 4;
         this.frameCounter = 0;
     }
@@ -29,9 +35,14 @@ class Player {
 
         // Set boundaries
         this.y = Math.min(
-            Math.max(this.height / 2, this.y), // Top limit
-            game.height - this.height / 2      // Bottom limit
+            Math.max(this.height / 2, this.y),
+            (game.height) - this.height / 2
         );
+
+        // Visuals logic
+        if (game.savatteCollected) {
+            this.currentAnimation = "shoot";
+        }
 
         // Jump
         if (game.keys["Space"]) {
@@ -44,6 +55,7 @@ class Player {
             game.savatteCollected = false;
 
             this.shoot(game);
+            this.currentAnimation = "fly"; // Reset animation
         }
     }
 
@@ -52,13 +64,13 @@ class Player {
         this.frameCounter++;
         if (this.frameCounter >= this.frameRate) {
             this.frameCounter = 0;
-            this.currentFrame = this.spriteLoader.next();
+            this.currentFrame = this.animations[this.currentAnimation].next();
         }
 
         if (!this.currentFrame) return;
 
         this.ctx.drawImage(
-            this.spriteLoader.image,
+            this.animations[this.currentAnimation].image,
             this.currentFrame.sx,
             this.currentFrame.sy,
             this.currentFrame.sw,
@@ -83,12 +95,19 @@ class Player {
         savatteArgs.spriteLoader = new SpriteLoader(savatteArgs.spriteSrc, 3, 3);
         const savatte = new Projectile(savatteArgs);
 
-        // Optional: handle hits directly on the game
         // bullet.addEventListener("hit", e => {
         //     game.dispatchEvent(new CustomEvent("enemyHit", { detail: e.detail }));
         // });
 
         game.objects.push(savatte);
+    }
+
+    // Invoked by Game when player gets hit
+    takeDamage() {
+        this.currentAnimation = "hurt";
+        setTimeout(() => {
+            this.currentAnimation = "fly"
+        }, 500);
     }
 }
 

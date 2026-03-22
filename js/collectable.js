@@ -70,14 +70,11 @@ class Collectable {
         });
 
         // Collision detection
-        const offsetX = 2;
-        const offsetY = 0.8;
-
         const collided = 
-            this.target.x + this.target.width > this.x * offsetX &&
-            this.target.x < this.x + this.width &&  
-            (this.target.y + this.target.height) * offsetY > this.y &&
-            this.target.y < this.y + this.height;
+            this.target.x - this.target.width/2 < this.x + this.width/2 &&
+            this.target.x + this.target.width/2 > this.x - this.width/2 &&
+            this.target.y - this.target.height/2 < this.y + this.height/2 &&
+            this.target.y + this.target.height/2 > this.y - this.height/2;
             
         if (collided && !this.dead) {
             this.dead = true;
