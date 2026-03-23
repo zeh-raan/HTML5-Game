@@ -15,6 +15,8 @@ class Game extends EventTarget {
         this.width = width;
         this.height = height;        
 
+        this.state = "menu";
+
         // Creating player and enemy
         this.player = new Player(this.ctx);
         this.playerHP = 5;
@@ -68,6 +70,14 @@ class Game extends EventTarget {
             this.enemy.takeDamage();
 
             console.log("Poacher hit!", e.detail, "\nHP left:", this.enemyHP);
+
+            // Enemy dies
+            if (this.enemyHP <= 0) {
+                setTimeout(() => {
+                    this.state = "victory";
+                    this.enemy.dead = true;
+                }, 1000);
+            }
         })
         
         // Player gets hit
@@ -77,6 +87,14 @@ class Game extends EventTarget {
             this.player.takeDamage();
 
             console.log("Player hit!", e.detail, "\nHP left:", this.playerHP);
+
+            // Player dies
+            if (this.playerHP <= 0) {
+                setTimeout(() => {
+                    this.state = "gameover";
+                    this.player.dead = true;
+                }, 1000);
+            }
         });
 
         // Player heals
@@ -99,6 +117,48 @@ class Game extends EventTarget {
         this.frameTimer += 1;
         this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
+        // Display menu
+        if (this.state == "menu") {
+            this.drawMenu();
+            
+            // Press "Enter to start"
+            if (this.keys["Enter"]) {
+                this.keys["Enter"] = false;
+                this.state = "playing";
+            }
+
+            requestAnimationFrame(this.nextFrame);
+            return;
+        }
+
+        // Show game over screen
+        if (this.state === "gameover") {
+            this.drawGameOver();
+
+            if (this.keys["Enter"]) {
+                location.reload(); // Restarts
+            }
+
+            requestAnimationFrame(this.nextFrame);
+            return;
+        }
+
+        // Show victory screen
+        if (this.state === "victory") {
+            this.drawVictory();
+
+            if (this.keys["Enter"]) {
+                location.reload(); // Restarts
+            }
+
+            requestAnimationFrame(this.nextFrame);
+            return;
+        }
+
+        // ------------
+        //   Gameloop
+        // ------------
+
         // Update systems
         this.savatteSpawner.update(this);
         this.mangoSpawner.update(this);
@@ -110,10 +170,6 @@ class Game extends EventTarget {
         });
 
         // Removes used sprites (i.e. collectables)
-        if (this.objects[0].dead) {
-            // Show game over
-        }
-
         this.objects = this.objects.filter(o => !o.dead);
         requestAnimationFrame(this.nextFrame);
     }
@@ -121,6 +177,78 @@ class Game extends EventTarget {
     // Starts the game
     start() {
         this.nextFrame();
+    }
+
+    // Shows menu
+    drawMenu() {
+        const ctx = this.ctx;
+
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(0, 0, this.width, this.height);
+
+        ctx.textAlign = "center";
+        ctx.fillStyle = "white";
+
+        ctx.font = "72px Arial";
+        ctx.fillText("PARAKEET VS POACHER", this.width / 2, this.height * 0.35);
+
+        ctx.font = "32px Arial";
+        ctx.fillText("Press ENTER to Start", this.width / 2, this.height * 0.5);
+
+        ctx.font = "20px Arial";
+        ctx.fillText("SPACE = Fly", this.width / 2, this.height * 0.6);
+        ctx.fillText("F = Throw Savatte", this.width / 2, this.height * 0.65);
+    }
+
+    // Shows game over
+    drawGameOver() {
+        const ctx = this.ctx;
+
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, this.width, this.height);
+
+        ctx.textAlign = "center";
+
+        ctx.fillStyle = "red";
+        ctx.font = "72px Arial";
+        ctx.fillText("GAME OVER", this.width / 2, this.height * 0.4);
+
+        ctx.fillStyle = "white";
+        ctx.font = "32px Arial";
+        ctx.fillText("Press ENTER to Restart", this.width / 2, this.height * 0.55);
+    }
+
+    // Show victory screen
+    drawVictory() {
+        const ctx = this.ctx;
+
+        // Background
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(0, 0, this.width, this.height);
+
+        ctx.textAlign = "center";
+
+        // Title
+        ctx.fillStyle = "#4CAF50";
+        ctx.font = "72px Arial";
+        ctx.fillText("VICTORY!", this.width / 2, this.height * 0.35);
+
+        // Subtitle
+        ctx.fillStyle = "white";
+        ctx.font = "32px Arial";
+        ctx.fillText("The poacher has been defeated!", this.width / 2, this.height * 0.5);
+
+        // Score display
+        ctx.font = "28px Arial";
+        ctx.fillText(`Score: ${this.score}`, this.width / 2, this.height * 0.6);
+
+        // Restart instruction
+        ctx.font = "24px Arial";
+
+        // blinking text
+        if (Math.floor(this.frameTimer / 30) % 2 === 0) {
+            ctx.fillText("Press ENTER to play again", this.width / 2, this.height * 0.75);
+        }
     }
 }
 
