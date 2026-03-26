@@ -58,7 +58,7 @@ class Game extends EventTarget {
         
         // Game logic
         this.frameTimer = -1;
-        this.objects = [this.player, this.enemy]; // Player and collectibles
+        this.objects = []; // Collectibles
 
         this.score = 0;
         this.savatteCollected = false;
@@ -101,7 +101,7 @@ class Game extends EventTarget {
                     this.state = "victory";
                     this.enemy.dead = true;
                     this.victoryTime = this.ui.getTimeString();
-                }, 1000);
+                }, 250);
             }
         })
         
@@ -118,7 +118,7 @@ class Game extends EventTarget {
                 setTimeout(() => {
                     this.state = "gameover";
                     this.player.dead = true;
-                }, 750);
+                }, 250);
             }
         });
 
@@ -148,8 +148,24 @@ class Game extends EventTarget {
             
             this.ui.startTime = Date.now(); // Syncs up clock to when game is started
         } 
+
+        // Restart game
         else if ((this.state === "gameover" || this.state === "victory") && this.keys["Enter"]) {
-            location.reload(); // Restart game
+            this.state = "playing";
+            this.ui.startTime = Date.now();
+            
+            // Resets player, enemy and collectibles
+            this.player.dead = false;
+            this.playerHP = 5;
+            this.player.x = 200;
+            this.player.y = 200;
+
+            this.enemy.dead = false;
+            this.enemyHP = 5;
+            this.enemy.x = this.width * 0.85;
+            this.enemy.y = this.height / 2
+
+            this.objects = [];
         }
 
         // ------------
@@ -163,6 +179,12 @@ class Game extends EventTarget {
             // Update systems
             this.savatteSpawner.update(this);
             this.mangoSpawner.update(this);
+
+            this.player.update(this);
+            this.player.draw();
+
+            this.enemy.update(this);
+            this.enemy.draw();
     
             // Update and draw every object in the game
             this.objects.forEach(obj => {
