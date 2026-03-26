@@ -49,7 +49,7 @@ class Enemy {
             this.frameSinceLastShot++;
 
             if (this.frameSinceLastShot == 10) {
-                this.animations["shoot"].reset();
+                // this.animations["shoot"].reset();
                 this.frameSinceLastShot = 0;
                 this.currentAnimation = "idle";
             }

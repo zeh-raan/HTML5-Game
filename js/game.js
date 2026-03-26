@@ -76,7 +76,7 @@ class Game extends EventTarget {
                 setTimeout(() => {
                     this.state = "victory";
                     this.enemy.dead = true;
-                }, 1000);
+                }, 750);
             }
         })
         
@@ -93,7 +93,7 @@ class Game extends EventTarget {
                 setTimeout(() => {
                     this.state = "gameover";
                     this.player.dead = true;
-                }, 1000);
+                }, 750);
             }
         });
 
