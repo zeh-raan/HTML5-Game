@@ -5,26 +5,27 @@ A mauritius parakeet chasing after a poacher in a hot air ballon to rescue her b
 | ID          | Name              |
 |-------------|-------------------|
 | `2415832`    | Boodun Abdur-Rahmaan Muhammad Bin Nadeem |
-| `ID` | Name              |
-| `ID`    | Name             |
-| `ID` | Name              |
+| `2413920` | Peviraj Daby |
+| `2412929`    | Bissessur Gregory |
+| `2310919` | Pourushotam Deal |
 | `2412529`   | Azimekhan Zehraan |
 
-## Fork then clone your own repository
+## Setup and Usage
 
-```bash
-git clone https://github.com/<your-username>/HTML5-Game.git
-```
+1. **Clone the repository**
+    ```bash
+    git clone https://github.com/zeh-raan/HTML5-Game.git
+    ```
 
-## Implement Sprite in JS
+2. **Navigate to directory.**
+    ```bash
+    cd HTML5-Game/
+    ```
 
-```javascript
-drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
-```
-
-| Parameters | Explanation                       |
-|------------|-----------------------------------|
-| sx,sy      | start position in sprite sheet    |
-| sw,sh       | size of frame inside sprite sheet |
-| dx,dy       | position on canvas                |
-| dw,dh       | size on canvas                    |
+3. **Lauch a local server.**
+    * Serve with `Liveserver` extension from VS Code.
+    * Run a local HTTP server.
+        ```bash
+        python -m http.server
+        ```
+        ***Note:*** *Will be served on http://0.0.0.0:8000/*
