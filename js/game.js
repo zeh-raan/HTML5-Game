@@ -145,6 +145,8 @@ class Game extends EventTarget {
         if (this.state === "menu" && this.keys["Enter"]) {
             this.keys["Enter"] = false;
             this.state = "playing";
+            
+            this.ui.startTime = Date.now(); // Syncs up clock to when game is started
         } 
         else if ((this.state === "gameover" || this.state === "victory") && this.keys["Enter"]) {
             location.reload(); // Restart game
@@ -174,6 +176,7 @@ class Game extends EventTarget {
             // Draw HUD
             this.ui.draw();
         } 
+
         // Draw UI for each game state
         else if (this.state === "menu") {
             this.ui.drawMenu();
