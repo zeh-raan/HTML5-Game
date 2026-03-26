@@ -6,7 +6,7 @@ A mauritius parakeet chasing after a poacher in a hot air ballon to rescue her b
 |-------------|-------------------|
 | `2415832`    | Boodun Abdur-Rahmaan Muhammad Bin Nadeem |
 | `2413920` | Peviraj Daby |
-| `2412929`    | Gregory Bissessur |
+| `2412929`    | Bissessur Gregory |
 | `2310919` | Pourushotam Deal |
 | `2412529`   | Azimekhan Zehraan |
 
