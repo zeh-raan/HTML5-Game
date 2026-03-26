@@ -6,8 +6,8 @@ class Player {
     constructor(ctx) {
         this.ctx = ctx;
 
-        this.x = 100;
-        this.y = 250;
+        this.x = 200;
+        this.y = 200;
         this.width  = 200;
         this.height = 200;
         this.dead = false;
@@ -35,10 +35,10 @@ class Player {
         this.spdY += this.gravity;
         this.y += this.spdY;
 
-        // Set boundaries
+        // Set upper boundaries
         this.y = Math.min(
             Math.max(this.height / 2, this.y),
-            (game.height) - this.height / 2
+            game.height - this.height / 2
         );
 
         // Visuals logic
@@ -56,14 +56,14 @@ class Player {
             }
         }
 
-        // Jump
+        // Flap
         if (game.keys["Space"]) {
             this.spdY = this.flapPower;
         }
 
         // Avoy savatte
-        if (game.keys["KeyF"] && game.savatteCollected) {
-            game.keys["KeyF"] = false;
+        if (game.keys["Enter"] && game.savatteCollected) {
+            game.keys["Enter"] = false;
             game.savatteCollected = false;
 
             this.shoot(game);
@@ -106,10 +106,6 @@ class Player {
         // Animation for the savatte
         savatteArgs.spriteLoader = new SpriteLoader(savatteArgs.spriteSrc, 3, 3);
         const savatte = new Projectile(savatteArgs);
-
-        // bullet.addEventListener("hit", e => {
-        //     game.dispatchEvent(new CustomEvent("enemyHit", { detail: e.detail }));
-        // });
 
         game.objects.push(savatte);
     }

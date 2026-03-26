@@ -6,6 +6,9 @@ import savattePickupArgs from "./items/savattePickup.js";
 import Player from "./player.js";
 import Spawner from "./spawner.js";
 import SpriteLoader from "./spriteloader.js";
+import Background from "./background.js";
+import Music from "./music.js";
+import Ui from "./ui.js";
 
 class Game extends EventTarget {
     constructor(ctx, width, height) {
@@ -13,15 +16,32 @@ class Game extends EventTarget {
 
         this.ctx = ctx;
         this.width = width;
-        this.height = height;        
+        this.height = height;
 
+        // Background
+        this.background = new Background(this.ctx); // Backdrop
+        this.victoryTime = null; // store score
         this.state = "menu";
+
+        // Background music
+        this.music = new Music();
+        this.music.play(); // Start music by default
+
+        // Create UI
+        this.ui = new Ui(this.ctx, this);
 
         // Creating player and enemy
         this.player = new Player(this.ctx);
         this.playerHP = 5;
 
-        this.enemy = new Enemy(this.ctx, this.width * 0.85, this.height / 2, 400, 400, this.player);
+        this.enemy = new Enemy(
+            this.ctx, 
+            this.width * 0.85, 
+            this.height / 2, 
+            500, 
+            500, 
+            this.player
+        );
         this.enemyHP = 5;
 
         // Creates a spawner for weapons
@@ -45,7 +65,11 @@ class Game extends EventTarget {
 
         // Handle player input
         this.keys = {};
-        window.addEventListener("keydown", e => this.keys[e.code] = true);
+        window.addEventListener("keydown", e => {
+            this.keys[e.code] = true;
+            // Press 'm' to mute/play music
+            if (e.code === "KeyM") { this.music.pressMute(); }
+        });
         window.addEventListener("keyup", e => this.keys[e.code] = false);
 
         // Adding handlers
@@ -76,7 +100,8 @@ class Game extends EventTarget {
                 setTimeout(() => {
                     this.state = "victory";
                     this.enemy.dead = true;
-                }, 750);
+                    this.victoryTime = this.ui.getTimeString();
+                }, 1000);
             }
         })
         
@@ -115,140 +140,52 @@ class Game extends EventTarget {
     // Runs every animation frame
     nextFrame = () => {
         this.frameTimer += 1;
-        this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-        // Display menu
-        if (this.state == "menu") {
-            this.drawMenu();
-            
-            // Press "Enter to start"
-            if (this.keys["Enter"]) {
-                this.keys["Enter"] = false;
-                this.state = "playing";
-            }
-
-            requestAnimationFrame(this.nextFrame);
-            return;
-        }
-
-        // Show game over screen
-        if (this.state === "gameover") {
-            this.drawGameOver();
-
-            if (this.keys["Enter"]) {
-                location.reload(); // Restarts
-            }
-
-            requestAnimationFrame(this.nextFrame);
-            return;
-        }
-
-        // Show victory screen
-        if (this.state === "victory") {
-            this.drawVictory();
-
-            if (this.keys["Enter"]) {
-                location.reload(); // Restarts
-            }
-
-            requestAnimationFrame(this.nextFrame);
-            return;
+        // Handle Enter key for state transitions
+        if (this.state === "menu" && this.keys["Enter"]) {
+            this.keys["Enter"] = false;
+            this.state = "playing";
+        } 
+        else if ((this.state === "gameover" || this.state === "victory") && this.keys["Enter"]) {
+            location.reload(); // Restart game
         }
 
         // ------------
         //   Gameloop
         // ------------
+        if (this.state === "playing") {
+            // Update background
+            this.background.update();
+            this.background.draw();
 
-        // Update systems
-        this.savatteSpawner.update(this);
-        this.mangoSpawner.update(this);
+            // Update systems
+            this.savatteSpawner.update(this);
+            this.mangoSpawner.update(this);
+    
+            // Update and draw every object in the game
+            this.objects.forEach(obj => {
+                obj.update(this);
+                obj.draw();
+            });
+    
+            // Removes used sprites (i.e. collectables)
+            this.objects = this.objects.filter(o => !o.dead);
 
-        // Update and draw every object in the game
-        this.objects.forEach(obj => {
-            obj.update(this);
-            obj.draw();
-        });
-
-        // Removes used sprites (i.e. collectables)
-        this.objects = this.objects.filter(o => !o.dead);
-        requestAnimationFrame(this.nextFrame);
+            // Draw HUD
+            this.ui.draw();
+        } 
+        // Draw UI for each game state
+        else if (this.state === "menu") {
+            this.ui.drawMenu();
+        }  else if (this.state === "gameover") {
+            this.ui.drawGameOver();
+        } else if (this.state === "victory") {
+            this.ui.drawVictory(this.victoryTime);
+        }
     }
 
-    // Starts the game
     start() {
         this.nextFrame();
-    }
-
-    // Shows menu
-    drawMenu() {
-        const ctx = this.ctx;
-
-        ctx.fillStyle = "#0a0a0a";
-        ctx.fillRect(0, 0, this.width, this.height);
-
-        ctx.textAlign = "center";
-        ctx.fillStyle = "white";
-
-        ctx.font = "72px Arial";
-        ctx.fillText("PARAKEET VS POACHER", this.width / 2, this.height * 0.35);
-
-        ctx.font = "32px Arial";
-        ctx.fillText("Press ENTER to Start", this.width / 2, this.height * 0.5);
-
-        ctx.font = "20px Arial";
-        ctx.fillText("SPACE = Fly", this.width / 2, this.height * 0.6);
-        ctx.fillText("F = Throw Savatte", this.width / 2, this.height * 0.65);
-    }
-
-    // Shows game over
-    drawGameOver() {
-        const ctx = this.ctx;
-
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, this.width, this.height);
-
-        ctx.textAlign = "center";
-
-        ctx.fillStyle = "red";
-        ctx.font = "72px Arial";
-        ctx.fillText("GAME OVER", this.width / 2, this.height * 0.4);
-
-        ctx.fillStyle = "white";
-        ctx.font = "32px Arial";
-        ctx.fillText("Press ENTER to Restart", this.width / 2, this.height * 0.55);
-    }
-
-    // Show victory screen
-    drawVictory() {
-        const ctx = this.ctx;
-
-        // Background
-        ctx.fillStyle = "#0a0a0a";
-        ctx.fillRect(0, 0, this.width, this.height);
-
-        ctx.textAlign = "center";
-
-        // Title
-        ctx.fillStyle = "#4CAF50";
-        ctx.font = "72px Arial";
-        ctx.fillText("VICTORY!", this.width / 2, this.height * 0.35);
-
-        // Subtitle
-        ctx.fillStyle = "white";
-        ctx.font = "32px Arial";
-        ctx.fillText("The poacher has been defeated!", this.width / 2, this.height * 0.5);
-
-        // Score display
-        ctx.font = "28px Arial";
-        ctx.fillText(`Score: ${this.score}`, this.width / 2, this.height * 0.6);
-
-        // Restart instruction
-        ctx.font = "24px Arial";
-
-        // blinking text
-        if (Math.floor(this.frameTimer / 30) % 2 === 0) {
-            ctx.fillText("Press ENTER to play again", this.width / 2, this.height * 0.75);
-        }
     }
 }
 
